@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "405605804536",
-    "project_id": "clevertapflutter",
-    "storage_bucket": "clevertapflutter.firebasestorage.app"
+    "project_number": "154997575616",
+    "project_id": "abhi-51d06",
+    "storage_bucket": "abhi-51d06.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:9ca174f7bd15a5f51e4e0d",
-        "android_client_info": {
-          "package_name": "com.awesomeproject"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:f8f5824323edfe411e4e0d",
+        "mobilesdk_app_id": "1:154997575616:android:2e35b77912d684c0b30225",
         "android_client_info": {
           "package_name": "com.example.clevertap_flutter_app"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
+          "current_key": "AIzaSyDNaqG67ABVgMs0h9tp-0yi-DEy8sOqLCQ"
         }
       ],
       "services": {
@@ -45,15 +26,15 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:8e687e940eb0f15a1e4e0d",
+        "mobilesdk_app_id": "1:154997575616:android:08e205ad233a7a15b30225",
         "android_client_info": {
-          "package_name": "com.example.ecommercect"
+          "package_name": "com.example.demo"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
+          "current_key": "AIzaSyDNaqG67ABVgMs0h9tp-0yi-DEy8sOqLCQ"
         }
       ],
       "services": {
@@ -64,91 +45,15 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:dc32996ae3a0e26b1e4e0d",
+        "mobilesdk_app_id": "1:154997575616:android:85003b9260acd5c6b30225",
         "android_client_info": {
-          "package_name": "com.example.hello"
+          "package_name": "com.native_project"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:4af7b33dcbf49cf21e4e0d",
-        "android_client_info": {
-          "package_name": "com.henil.test_push"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:1a65b642869c5bd91e4e0d",
-        "android_client_info": {
-          "package_name": "com.myproject"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:328db496549a3ea71e4e0d",
-        "android_client_info": {
-          "package_name": "com.nativework"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:405605804536:android:717e31a38675d9811e4e0d",
-        "android_client_info": {
-          "package_name": "com.projectreactnative"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyApkRIIxoe3x2AFr8TB3yV6jRSiyY3up8I"
+          "current_key": "AIzaSyDNaqG67ABVgMs0h9tp-0yi-DEy8sOqLCQ"
         }
       ],
       "services": {

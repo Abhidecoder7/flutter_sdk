@@ -1,0 +1,2 @@
+/Users/abhishek.vishwakarma/Desktop/Flutter_Integration/CleverTap_Flutter_Integration/android/app/.cxx/Debug/10i315l4/x86/CMakeFiles/edit_cache.dir
+/Users/abhishek.vishwakarma/Desktop/Flutter_Integration/CleverTap_Flutter_Integration/android/app/.cxx/Debug/10i315l4/x86/CMakeFiles/rebuild_cache.dir

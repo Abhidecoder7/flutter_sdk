@@ -1,216 +1,10 @@
-// import 'package:flutter/material.dart';
-// import 'package:clevertap_plugin/clevertap_plugin.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   await Firebase.initializeApp(
-//     options: DefaultFirebaseOptions.currentPlatform,
-//   );
-
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Demo',
-//       theme: ThemeData(
-//         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-//         useMaterial3: true,
-//       ),
-//       home: const MyHomePage(title: 'Clevertap_Flutter_Demo'),
-//     );
-//   }
-// }
-
-// class MyHomePage extends StatefulWidget {
-//   const MyHomePage({super.key, required this.title});
-//   final String title;
-
-//   @override
-//   State<MyHomePage> createState() => _MyHomePageState();
-// }
-
-// class _MyHomePageState extends State<MyHomePage> {
-//   int _counter = 0;
-//   List<String> imageURls = [];
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initializeCleverTap();
-//     CleverTapPlugin.setDebugLevel(3);
-//   }
-
-//   void _initializeCleverTap() {
-//     var stuff = ["bags", "shoes"];
-//     var values = [DateTime.parse('20250130'), DateTime.parse('20250210')];
-//     CleverTapPlugin.profileSetMultiValues("End Policy Dates Multiple", values);
-//     var profile = {
-//       'Name': 'Captain America',
-//       'Identity': '25',
-//       'Email': 'chebd@america.com',
-//       'Phone': '+14121234',
-//       'stuff': stuff,
-//     };
-
-//     // Call CleverTap onUserLogin method with profile data
-//     CleverTapPlugin.onUserLogin(profile);
-//     CleverTapPlugin.createNotificationChannel(
-//         "henil123", "Flutter Test", "Flutter Test", 3, true);
-
-//     // Initialize CleverTap Inbox
-//     CleverTapPlugin.initializeInbox();
-
-//     // Set the CleverTap inbox did initialize handler inside initState
-//     CleverTapPlugin().setCleverTapInboxDidInitializeHandler(() {
-//       inboxDidInitialize();
-//     });
-//     CleverTapPlugin()
-//         .setCleverTapInboxMessagesDidUpdateHandler(inboxMessagesDidUpdate);
-
-//     void onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
-//       this.setState(() {
-//         print("Display Units = " + displayUnits.toString());
-//       });
-//     }
-
-//     CleverTapPlugin()
-//         .setCleverTapDisplayUnitsLoadedHandler(onDisplayUnitsLoaded);
-//   }
-
-//   void inboxDidInitialize() {
-//     setState(() {
-//       debugPrint(
-//           "inboxDidInitialize called"); // Use debugPrint instead of print
-//       var styleConfig = {
-//         'noMessageTextColor': '#ff6600', // Custom text color for "no message"
-//         'noMessageText':
-//             'No message(s) to show.', // Custom message when no inbox message is available
-//         'navBarTitle': 'App Inbox' // Custom title for the inbox navigation bar
-//       };
-//       // Show the inbox with the provided style configuration
-//       CleverTapPlugin.showInbox(styleConfig);
-//     });
-//   }
-
-//   void inboxMessagesDidUpdate() {
-//     setState(() {
-//       debugPrint("inboxMessagesDidUpdate called");
-//     });
-//   }
-
-//   void Native_Display() {
-//     CleverTapPlugin.recordEvent("Native Display", {});
-//   }
-
-//   void onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
-//     setState(() {
-//       displayUnits?.forEach((element) {
-//         print("Display Units = " + element.toString());
-//         var img1 = element["content"][0]["icon"]["url"];
-//         setState(() {
-//           imageURls.add(img1);
-//         });
-//       });
-//     });
-//   }
-
-//   void _incrementCounter() {
-//     setState(() {
-//       _counter++;
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-//         title: Text(widget.title),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             const Text(
-//               'You have pushed the button this many times:',
-//             ),
-//             Text(
-//               '$_counter',
-//               style: Theme.of(context).textTheme.headlineMedium,
-//             ),
-//             ElevatedButton(
-//               onPressed: () {
-//                 CleverTapPlugin.recordEvent(
-//                     "In-app Notification Triggered", {});
-//               },
-//               child: const Text('Push Event: In-app_1 Notification'),
-//             ),
-//             // Button to open the inbox
-//             ElevatedButton(
-//               onPressed: () {
-//                 CleverTapPlugin.showInbox({});
-//                 //CleverTapPlugin.recordEvent("Inbox", {});
-//               },
-//               child: const Text('Open Inbox'),
-//             ),
-//             ElevatedButton(
-//               onPressed: () {
-//                 //CleverTapPlugin.showInbox({});
-//                 CleverTapPlugin.recordEvent("Inbox", {});
-//               },
-//               child: const Text('Inbox Event'),
-//             ),
-//             ElevatedButton(
-//               onPressed: () {
-//                 //CleverTapPlugin.showInbox({});
-//                 Native_Display();
-//               },
-//               child: const Text('Native Display'),
-//             ),
-//             const SizedBox(height: 20),
-
-//             // Display images if there are any in imageUrls
-//             if (imageURls.isNotEmpty)
-//               Column(
-//                 children: imageURls.map((imageUrl) {
-//                   return Padding(
-//                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-//                     child: Image.network(imageUrl),
-//                   );
-//                 }).toList(),
-//               ),
-//           ],
-//         ),
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _incrementCounter,
-//         tooltip: 'Increment',
-//         child: const Icon(Icons.add),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  CleverTapPlugin.setDebugLevel(1);
   runApp(const MyApp());
 }
 
@@ -219,216 +13,174 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Clevertap_Flutter_Demo'),
+    return const MaterialApp(
+      home: PermissionScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+class PermissionScreen extends StatefulWidget {
+  const PermissionScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _PermissionScreenState createState() => _PermissionScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  List<String> imageURls = [];
+class _PermissionScreenState extends State<PermissionScreen> {
+  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin(); // ✅ Correct instantiation
 
   @override
   void initState() {
     super.initState();
-    _initializeCleverTap();
-    CleverTapPlugin.setDebugLevel(3);
+    _requestPermissions();
+    _initializeCleverTapInbox();
   }
 
-  void _initializeCleverTap() {
-    var stuff = ["bags", "shoes"];
-    var values = [DateTime.parse('20250130'), DateTime.parse('20250210')];
-    CleverTapPlugin.profileSetMultiValues("End Policy Dates Multiple", values);
-    var profile = {
-      'Name': 'Captainavg America',
-      'Identity': '101',
-      'Email': 'cabdhj@america.com',
-      'Phone': '+14121234',
-      'stuff': stuff,
-    };
-
-    // Call CleverTap onUserLogin method with profile data
-    CleverTapPlugin.onUserLogin(profile);
-    CleverTapPlugin.createNotificationChannel(
-        "henil123", "Flutter Test", "Flutter Test", 3, true);
-
-    // Initialize CleverTap Inbox
-    CleverTapPlugin.initializeInbox();
-
-    // Set the CleverTap inbox did initialize handler inside initState
-    CleverTapPlugin().setCleverTapInboxDidInitializeHandler(() {
-      inboxDidInitialize();
-    });
-    CleverTapPlugin()
-        .setCleverTapInboxMessagesDidUpdateHandler(inboxMessagesDidUpdate);
-
-    // void onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
-    //   this.setState(() {
-    //     print("Display Units = " + displayUnits.toString());
-    //   });
-    // }
-
-    // CleverTapPlugin()
-    //     .setCleverTapDisplayUnitsLoadedHandler(onDisplayUnitsLoaded);
-    CleverTapPlugin()
-        .setCleverTapDisplayUnitsLoadedHandler(onDisplayUnitsLoaded);
+  void _initializeCleverTapInbox() {
+    CleverTapPlugin.initializeInbox(); // ✅ Initialize Inbox
+    _cleverTapPlugin.setCleverTapInboxDidInitializeHandler(inboxDidInitialize);
+    _cleverTapPlugin.setCleverTapInboxMessagesDidUpdateHandler(inboxMessagesDidUpdate);
   }
 
-  void onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
-    if (displayUnits == null || displayUnits.isEmpty) {
-      debugPrint(":rotating_light: No display units received.");
-      return;
-    }
-    debugPrint(":white_check_mark: Display Units Loaded: $displayUnits");
-    setState(() {
-      imageURls.clear(); // Reset previous URLs
-      for (var unit in displayUnits) {
-        if (unit["content"] is List && unit["content"].isNotEmpty) {
-          var imgUrl = unit["content"][0]["media"]
-              ?["url"]; // Use "media" instead of "icon"
-          if (imgUrl != null && imgUrl.isNotEmpty) {
-            imageURls.add(imgUrl);
-          }
-        }
+  Future<void> _requestPermissions() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.notification,
+    ].request();
+
+    if (statuses[Permission.notification]?.isGranted ?? false) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+        );
       }
-    });
-  }
-
-  void fetchNativeDisplay() async {
-    await Future.delayed(Duration(seconds: 2)); // Ensure async wait works
-    var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
-    debugPrint(":package: Manually fetched display units: $displayUnits");
-    onDisplayUnitsLoaded(displayUnits);
+    }
   }
 
   void inboxDidInitialize() {
     setState(() {
-      debugPrint(
-          "inboxDidInitialize called"); // Use debugPrint instead of print
-      var styleConfig = {
-        'noMessageTextColor': '#ff6600', // Custom text color for "no message"
-        'noMessageText':
-            'No message(s) to show.', // Custom message when no inbox message is available
-        'navBarTitle': 'App Inbox' // Custom title for the inbox navigation bar
-      };
-      // Show the inbox with the provided style configuration
-      CleverTapPlugin.showInbox(styleConfig);
+      print("📥 CleverTap Inbox Initialized");
     });
   }
 
   void inboxMessagesDidUpdate() {
     setState(() {
-      debugPrint("inboxMessagesDidUpdate called");
-    });
-  }
-
-  void nativeDisplay() {
-    debugPrint(":rocket: Triggering Native Display Event...");
-    CleverTapPlugin.recordEvent("Native Display", {});
-    fetchNativeDisplay(); // Manually fetch display units after triggering
-  }
-
-  // void onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
-  //   setState(() {
-  //     displayUnits?.forEach((element) {
-  //       print("Display Units = " + element.toString());
-  //       var img1 = element["content"][0]["icon"]["url"];
-  //       setState(() {
-  //         imageURls.add(img1);
-  //       });
-  //     });
-  //   });
-  // }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
+      print("🔄 CleverTap Inbox Messages Updated");
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            ElevatedButton(
-              onPressed: () {
-                CleverTapPlugin.recordEvent(
-                    "In-app Notification Triggered", {});
-              },
-              child: const Text('Push Event: In-app_1 Notification'),
-            ),
-            // Button to open the inbox
-            ElevatedButton(
-              onPressed: () {
-                CleverTapPlugin.showInbox({});
-                //CleverTapPlugin.recordEvent("Inbox", {});
-              },
-              child: const Text('Open Inbox'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                //CleverTapPlugin.showInbox({});
-                CleverTapPlugin.recordEvent("Inbox", {});
-              },
-              child: const Text('Inbox Event'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                //CleverTapPlugin.showInbox({});
-                nativeDisplay();
-              },
-              child: const Text('Native Display'),
-            ),
-
-            // Add space between buttons and images
+          children: [
+            const Text("Requesting Permissions..."),
             const SizedBox(height: 20),
-
-            // Display images if there are any in imageUrls
-            if (imageURls.isNotEmpty)
-              Column(
-                children: imageURls.map((imageUrl) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Image.network(imageUrl),
-                  );
-                }).toList(),
-              ),
+            ElevatedButton(
+              onPressed: _requestPermissions,
+              child: const Text("Grant Permissions"),
+            ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
 }
+
+class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key});
+
+  @override
+  _UserProfileScreenState createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends State<UserProfileScreen> {
+  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin(); // ✅ Instance created
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _identityController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _identityController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void onUserLogin() {
+    var profile = {
+      'Name': _nameController.text,
+      'Identity': _identityController.text,
+      'Email': _emailController.text,
+      'Phone': _phoneController.text,
+      'stuff': ["bags", "shoes"],
+    };
+    CleverTapPlugin.onUserLogin(profile);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("User logged in successfully!")),
+    );
+  }
+
+  void updateUserProfile() {
+    var profile = {
+      'Name': _nameController.text,
+      'Identity': _identityController.text,
+      'Email': _emailController.text,
+      'Phone': _phoneController.text,
+      'DOB': CleverTapPlugin.getCleverTapDate(DateTime.parse('2012-04-22')),
+      'props': 'property1',
+      'stuff': ["bags", "shoes"],
+    };
+    CleverTapPlugin.profileSet(profile);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Profile updated successfully!")),
+    );
+  }
+//on click to push notification buttion this function is called.
+  void openInbox() {
+    CleverTapPlugin.initializeInbox(); // ✅ Ensure Inbox is initialized
+    Future.delayed(Duration(seconds: 1), () {
+      var styleConfig = {
+        'noMessageTextColor': '#ff6600',
+        'noMessageText': 'No messages yet!',
+        'navBarTitle': 'App Inbox Message'
+      };
+      CleverTapPlugin.showInbox(styleConfig);
+    });
+
+    
+  }
+  
+  
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("CleverTap User Profile")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Name")),
+            TextField(controller: _identityController, decoration: const InputDecoration(labelText: "Identity")),
+            TextField(controller: _emailController, decoration: const InputDecoration(labelText: "Email"), keyboardType: TextInputType.emailAddress),
+            TextField(controller: _phoneController, decoration: const InputDecoration(labelText: "Phone"), keyboardType: TextInputType.phone),
+            const SizedBox(height: 20),
+            ElevatedButton(onPressed: onUserLogin, child: const Text("On User Login")),
+            const SizedBox(height: 10),
+            ElevatedButton(onPressed: updateUserProfile, child: const Text("Update Profile")),
+            const SizedBox(height: 10),
+            ElevatedButton(onPressed: openInbox, child: const Text("Open App Inbox")),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
