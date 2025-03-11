@@ -1,20 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  CleverTapPlugin.setDebugLevel(1);
+  CleverTapPlugin.setDebugLevel(3);
   runApp(const MyApp());
 }
+
+// Push Primer configuration using Half-Interstitial template
+var pushPrimerConfig = {
+  'inAppType': 'half-interstitial',
+  'titleText': 'Get Notified',
+  'messageText': 'Please enable notifications on your device to use Push Notifications.',
+  'followDeviceOrientation': false,
+  'positiveBtnText': 'Allow',
+  'negativeBtnText': 'Cancel',
+  'fallbackToSettings': true,
+  'backgroundColor': '#FFFFFF',
+  'btnBorderColor': '#000000',
+  'titleTextColor': '#000000',
+  'messageTextColor': '#000000',
+  'btnTextColor': '#000000',
+  'btnBackgroundColor': '#FFFFFF',
+  'btnBorderRadius': '4',
+  'imageUrl': 'https://icons.iconarchive.com/icons/treetog/junior/64/camera-icon.png'
+};
+
+var pushPrimerConfigAlert = {
+  'inAppType': 'alert',
+  'titleText': 'Get Notified',
+  'messageText': 'Enable Notification permission',
+  'followDeviceOrientation': true,
+  'positiveBtnText': 'Allow',
+  'negativeBtnText': 'Cancel',
+  'fallbackToSettings': true
+};
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: PermissionScreen(),
+    return MaterialApp(
+      title: 'Navigation Basics',
+      home: const PermissionScreen(), // Starting screen with permission request
     );
   }
 }
@@ -27,24 +59,20 @@ class PermissionScreen extends StatefulWidget {
 }
 
 class _PermissionScreenState extends State<PermissionScreen> {
-  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin(); // ✅ Correct instantiation
+  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
     _initializeCleverTapInbox();
-  }
-
-  void _initializeCleverTapInbox() {
-    CleverTapPlugin.initializeInbox(); // ✅ Initialize Inbox
-    _cleverTapPlugin.setCleverTapInboxDidInitializeHandler(inboxDidInitialize);
-    _cleverTapPlugin.setCleverTapInboxMessagesDidUpdateHandler(inboxMessagesDidUpdate);
+    _getCurrentLocation();
   }
 
   Future<void> _requestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.notification,
+      Permission.location,
     ].request();
 
     if (statuses[Permission.notification]?.isGranted ?? false) {
@@ -57,6 +85,12 @@ class _PermissionScreenState extends State<PermissionScreen> {
     }
   }
 
+  void _initializeCleverTapInbox() {
+    CleverTapPlugin.initializeInbox();
+    _cleverTapPlugin.setCleverTapInboxDidInitializeHandler(inboxDidInitialize);
+    _cleverTapPlugin.setCleverTapInboxMessagesDidUpdateHandler(inboxMessagesDidUpdate);
+  }
+
   void inboxDidInitialize() {
     setState(() {
       print("📥 CleverTap Inbox Initialized");
@@ -67,6 +101,38 @@ class _PermissionScreenState extends State<PermissionScreen> {
     setState(() {
       print("🔄 CleverTap Inbox Messages Updated");
     });
+  }
+
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('Location permissions are permanently denied');
+    }
+
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    double latitude = position.latitude;
+    double longitude = position.longitude;
+
+    print("Latitude: $latitude, Longitude: $longitude"); // Debugging line
+
+    // Send location data to CleverTap
+    CleverTapPlugin.setLocation(latitude, longitude);
+    print("Location sent to CleverTap"); // Debugging line
   }
 
   @override
@@ -97,7 +163,7 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin(); // ✅ Instance created
+  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _identityController = TextEditingController();
@@ -142,10 +208,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       const SnackBar(content: Text("Profile updated successfully!")),
     );
   }
-//on click to push notification buttion this function is called.
+
   void openInbox() {
-    CleverTapPlugin.initializeInbox(); // ✅ Ensure Inbox is initialized
-    Future.delayed(Duration(seconds: 1), () {
+    CleverTapPlugin.initializeInbox();
+    Future.delayed(const Duration(seconds: 1), () {
       var styleConfig = {
         'noMessageTextColor': '#ff6600',
         'noMessageText': 'No messages yet!',
@@ -153,11 +219,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       };
       CleverTapPlugin.showInbox(styleConfig);
     });
-
-    
   }
-  
-  
+
+  void navigateToNextPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NextPage()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,6 +246,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ElevatedButton(onPressed: updateUserProfile, child: const Text("Update Profile")),
             const SizedBox(height: 10),
             ElevatedButton(onPressed: openInbox, child: const Text("Open App Inbox")),
+            const SizedBox(height: 10),
+            ElevatedButton(onPressed: navigateToNextPage, child: const Text("Go to Next Page")),
           ],
         ),
       ),
@@ -184,3 +255,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 }
 
+class NextPage extends StatelessWidget {
+  const NextPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Next Page')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context); // This goes back to the previous screen
+          },
+          child: const Text('Go Back'),
+        ),
+      ),
+    );
+  }
+}
