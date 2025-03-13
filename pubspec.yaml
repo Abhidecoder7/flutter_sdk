@@ -38,6 +38,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   permission_handler: ^11.4.0
   geolocator: ^13.0.2
+  firebase_messaging: ^14.7.10
+  carousel_slider: ^5.0.0
 
 
 dev_dependencies:
