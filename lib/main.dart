@@ -70,6 +70,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
   
   // Created a separate method to handle async operations
   void _setupInitialState() async {
+    _promptPushPrimer();
     setlistener();
     _requestPermissions();
     _initializeCleverTapInbox();
@@ -114,6 +115,21 @@ class _PermissionScreenState extends State<PermissionScreen> {
       }
     }
   }
+
+   void _promptPushPrimer() {
+    var pushPrimerJSON = {
+  'inAppType': 'alert',
+  'titleText': 'Get Notified',
+  'messageText': 'Enable Notification permission',
+  'followDeviceOrientation': true,
+  'positiveBtnText': 'Allow',
+  'negativeBtnText': 'Cancel',
+  'fallbackToSettings': true
+
+};
+    CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
+}
+
 
   void _initializeCleverTapInbox() {
     CleverTapPlugin.initializeInbox();

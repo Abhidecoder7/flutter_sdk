@@ -17,4 +17,7 @@ import clevertap_plugin
       
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+
+
+  
 }
