@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
@@ -60,6 +61,7 @@ class PermissionScreen extends StatefulWidget {
 
 class _PermissionScreenState extends State<PermissionScreen> {
   final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
+  bool _permissionsRequested = false;
   
   @override
   void initState() {
@@ -70,11 +72,19 @@ class _PermissionScreenState extends State<PermissionScreen> {
   
   // Created a separate method to handle async operations
   void _setupInitialState() async {
-    _promptPushPrimer();
+    // iOS-specific setup
+    if (Platform.isIOS) {
+      await _promptPushPrimer();
+    }
+    
     setlistener();
-    _requestPermissions();
     _initializeCleverTapInbox();
-    _getCurrentLocation();
+    await _getCurrentLocation();  // Wait for location setup
+    
+    // Request permissions only after setup is done
+    if (!_permissionsRequested) {
+      _requestPermissions();
+    }
     
     // Set the handler using instance (not static)
     _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(onDisplayUnitsLoaded);
@@ -101,35 +111,77 @@ class _PermissionScreenState extends State<PermissionScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.notification,
-      Permission.location,
-    ].request();
-
-    if (statuses[Permission.notification]?.isGranted ?? false) {
+    setState(() {
+      _permissionsRequested = true;
+    });
+    
+    // Different permission handling for iOS and Android
+    if (Platform.isIOS) {
+      // For iOS, we only check location permission here as notification is handled differently
+      var locationStatus = await Permission.location.request();
+      debugPrint("iOS Location Permission: $locationStatus");
+      
+      // Navigate to next screen regardless of permission status
+      // on iOS, as notification permissions are handled separately
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const UserProfileScreen()),
         );
       }
+    } else {
+      // Android permission handling
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.notification,
+        Permission.location,
+      ].request();
+
+      // Debugging permission statuses
+      debugPrint("Android Notification Permission: ${statuses[Permission.notification]}");
+      debugPrint("Android Location Permission: ${statuses[Permission.location]}");
+
+      // For Android, check notification permission before proceeding
+      if (statuses[Permission.notification]?.isGranted ?? false) {
+        if (mounted) {
+          // Navigate to UserProfileScreen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+          );
+        }
+      } else {
+        // Handle case where notification permission is not granted
+        debugPrint("Notification permission not granted on Android.");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please grant notification permission.")),
+          );
+        }
+      }
     }
   }
 
-   void _promptPushPrimer() {
-    var pushPrimerJSON = {
-  'inAppType': 'alert',
-  'titleText': 'Get Notified',
-  'messageText': 'Enable Notification permission',
-  'followDeviceOrientation': true,
-  'positiveBtnText': 'Allow',
-  'negativeBtnText': 'Cancel',
-  'fallbackToSettings': true
-
-};
-    CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
-}
-
+  Future<void> _promptPushPrimer() async {
+    // Only use push primer on iOS
+    if (Platform.isIOS) {
+      var pushPrimerJSON = {
+        'inAppType': 'alert',
+        'titleText': 'Get Notified',
+        'messageText': 'Enable Notification permission',
+        'followDeviceOrientation': true,
+        'positiveBtnText': 'Allow',
+        'negativeBtnText': 'Cancel',
+        'fallbackToSettings': true
+      };
+      
+      // Wait a moment to let the app initialize on iOS
+      await Future.delayed(const Duration(milliseconds: 500));
+      CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
+      
+      // Wait for the push primer to be shown
+      await Future.delayed(const Duration(seconds: 2));
+    }
+  }
 
   void _initializeCleverTapInbox() {
     CleverTapPlugin.initializeInbox();
@@ -156,30 +208,40 @@ class _PermissionScreenState extends State<PermissionScreen> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+      print('Location services are disabled.');
+      return;
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
+        print('Location permissions are denied');
+        return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied');
+      print('Location permissions are permanently denied');
+      return;
     }
 
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    double latitude = position.latitude;
-    double longitude = position.longitude;
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+      double latitude = position.latitude;
+      double longitude = position.longitude;
 
-    print("Latitude: $latitude, Longitude: $longitude"); // Debugging line
+      print("Latitude: $latitude, Longitude: $longitude"); // Debugging line
 
-    // Send location data to CleverTap
-    CleverTapPlugin.setLocation(latitude, longitude);
-    print("Location sent to CleverTap"); // Debugging line
+      // Send location data to CleverTap
+      CleverTapPlugin.setLocation(latitude, longitude);
+      print("Location sent to CleverTap"); // Debugging line
+    } catch (e) {
+      print("Error getting location: $e");
+    }
   }
 
   @override
@@ -201,6 +263,17 @@ class _PermissionScreenState extends State<PermissionScreen> {
               onPressed: _fetchNativeDisplay,
               child: const Text("Fetch Native Display"),
             ),
+            // iOS-specific button
+            if (Platform.isIOS) 
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+                  );
+                },
+                child: const Text("Skip to Main Screen"),
+              ),
           ],
         ),
       ),
@@ -352,6 +425,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     _setupDisplayUnits();
+    
+    // For iOS, request notification permission again here
+    if (Platform.isIOS) {
+      _requestIOSNotificationPermission();
+    }
+  }
+
+  Future<void> _requestIOSNotificationPermission() async {
+    // On iOS, we need to wait a moment before requesting
+    await Future.delayed(const Duration(seconds: 1));
+    
+    var status = await Permission.notification.status;
+    if (status.isDenied) {
+      // Request again or prompt user to enable manually
+      await Permission.notification.request();
+    }
   }
   
   void _setupDisplayUnits() async {

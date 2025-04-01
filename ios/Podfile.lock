@@ -82,6 +82,7 @@ PODS:
 
 DEPENDENCIES:
   - clevertap_plugin (from `.symlinks/plugins/clevertap_plugin/ios`)
+  - CTNotificationService
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
@@ -135,6 +136,6 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
 
-PODFILE CHECKSUM: f7f798a6fb7f02d92fbd035943d71a6887dd92b4
+PODFILE CHECKSUM: 07e970854d9396717f2b505ac6b01ffbf8ef6d3f
 
 COCOAPODS: 1.16.2

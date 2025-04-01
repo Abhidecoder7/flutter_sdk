@@ -2,6 +2,26 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
+	
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to provide better services.</string>
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to provide better services.</string>
+<key>NSUserTrackingUsageDescription</key>
+<string>We need your permission to track your activity.</string>
+<key>UIBackgroundModes</key>
+<array>
+    <string>location</string>
+</array>
+<key>UIRequiredDeviceCapabilities</key>
+<array>
+    <string>location-services</string>
+</array>
+
+
+
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -25,9 +45,9 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>CleverTapAccountID</key>
-	<string>TEST-4R8-7ZK-6K7Z</string>
+	<string>TEST-W6Z-8W9-8K7Z</string>
 	<key>CleverTapToken</key>
-	<string>TEST-31a-b24</string>
+	<string>TEST-c0b-160</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
