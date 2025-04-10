@@ -1,9 +1,12 @@
 PODS:
+  - CleverTap-Geofence-SDK (1.0.7):
+    - CleverTap-iOS-SDK (>= 3.9)
   - CleverTap-iOS-SDK (7.1.0):
     - SDWebImage (~> 5.11)
-  - clevertap_plugin (3.2.0):
+  - clevertap_plugin (3.3.0):
     - CleverTap-iOS-SDK (= 7.1.0)
     - Flutter
+  - CTNotificationService (0.1.7)
   - Firebase/CoreOnly (10.25.0):
     - FirebaseCore (= 10.25.0)
   - Firebase/Messaging (10.25.0):
@@ -39,6 +42,7 @@ PODS:
   - Flutter (1.0.0)
   - geolocator_apple (1.2.0):
     - Flutter
+    - FlutterMacOS
   - GoogleDataTransport (9.4.1):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30911.0, >= 2.30908.0)
@@ -81,17 +85,21 @@ PODS:
   - SDWebImage/Core (5.21.0)
 
 DEPENDENCIES:
+  - CleverTap-Geofence-SDK
+  - CleverTap-iOS-SDK
   - clevertap_plugin (from `.symlinks/plugins/clevertap_plugin/ios`)
   - CTNotificationService
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
-  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
+  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 SPEC REPOS:
   trunk:
+    - CleverTap-Geofence-SDK
     - CleverTap-iOS-SDK
+    - CTNotificationService
     - Firebase
     - FirebaseCore
     - FirebaseCoreInternal
@@ -113,13 +121,15 @@ EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   geolocator_apple:
-    :path: ".symlinks/plugins/geolocator_apple/ios"
+    :path: ".symlinks/plugins/geolocator_apple/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
+  CleverTap-Geofence-SDK: 4e540f325716419b47891a8633b9ebfc4b9ffaf3
   CleverTap-iOS-SDK: 571ced90fc6378635db504f9767c62858e2c5286
-  clevertap_plugin: 26d665138f812ce40dbd554aaa0d73673980f584
+  clevertap_plugin: c26218cd430d837957efe9da6e02a307d3fe550b
+  CTNotificationService: 3eceea27cf0e28a2e14267bb706013363eb620c6
   Firebase: 0312a2352584f782ea56f66d91606891d4607f06
   firebase_core: 3b49a055ff54114cae400581c13671fe53936c36
   firebase_messaging: 394589dcda43e42ec9807558a409a975e285c45b
@@ -128,7 +138,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
   FirebaseMessaging: 88950ba9485052891ebe26f6c43a52bb62248952
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  geolocator_apple: 1560c3c875af2a412242c7a923e15d0d401966ff
+  geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
@@ -136,6 +146,6 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
 
-PODFILE CHECKSUM: 07e970854d9396717f2b505ac6b01ffbf8ef6d3f
+PODFILE CHECKSUM: 4992b5c7a7a87e5fafafce78db060c7734bb6f24
 
 COCOAPODS: 1.16.2

@@ -1,57 +1,86 @@
-import 'dart:ffi';
-import 'dart:io' show Platform;
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
+
 
 // Global navigator key to handle navigation outside widget context
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();    // Ensures Flutter bindings are initialized before running the app
-  CleverTapPlugin.setDebugLevel(3); // Sets CleverTap debug level for logging
-  // Initialize CleverTap instance
-  final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
-  // Register notification handler on instance
-  _cleverTapPlugin.setCleverTapPushNotificationClickedHandler(_onNotificationClicked);
+// Future<void> _firebaseBackgroundMessageHandler(RemoteMessage message) async {
+//   await Firebase.initializeApp();
+//   debugPrint("clevertap _firebaseBackgroundMessageHandler Background");
+//   CleverTapPlugin.createNotification(jsonEncode(message.data));
+// }
+// void _firebaseForegroundMessageHandler(RemoteMessage remoteMessage) {
+//   debugPrint('clevertap _firebaseForegroundMessageHandler called');
+//   CleverTapPlugin.createNotification(jsonEncode(remoteMessage.data));
+// }
+
+
+void main() async{
+  // Ensures that widget binding is initialized before running the app
+  WidgetsFlutterBinding.ensureInitialized();
+  Firebase.initializeApp();
+  
+  // Set CleverTap debug level (3 = verbose logs for debugging)
+  CleverTapPlugin.setDebugLevel(3);
+  
+  // FirebaseMessaging.onMessage.listen(_firebaseForegroundMessageHandler);
+  // FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessageHandler);
+
+
+  // Create an instance of CleverTapPlugin
+  final CleverTapPlugin cleverTapPlugin = CleverTapPlugin();
+  
+  // Set up a handler for CleverTap push notification clicks
+  cleverTapPlugin.setCleverTapPushNotificationClickedHandler(_onNotificationClicked);
+  
+  // Run the Flutter app
   runApp(const MyApp());
 }
 
+// Extension method for CleverTapPlugin to define a push notification click handler
 extension on CleverTapPlugin {
   void setCleverTapPushNotificationClickedHandler(void Function(Map<String, dynamic> payload) onNotificationClicked) {}
 }
 
-// Handle notification clicks
+// Callback function to handle push notification clicks
 void _onNotificationClicked(Map<String, dynamic> payload) {
   debugPrint("Notification clicked: $payload");
 
+  // Check if the notification contains a deep link key ("wzrk_dl")
+  // If the deep link matches "myapp://second", navigate to the '/second' route
   if (payload.containsKey("wzrk_dl") && payload["wzrk_dl"] == "myapp://second") {
     navigatorKey.currentState?.pushNamed('/second');
   }
 }
 
-// Main app with navigatorKey and routes
+
+
+// Main application widget
 class MyApp extends StatelessWidget {
-  
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey, // Ensuring only one navigation tree
-      title: 'Navigation Basics',
-      home: const PermissionScreen(), // Starting screen
+      navigatorKey: navigatorKey, // Global navigator key to handle navigation outside the widget context (useful for deep linking and push notifications)
+      title: 'Navigation Basics', // Sets the title of the application
+      home: const PermissionScreen(), // The initial screen that loads when the app starts
       routes: {
-        '/userProfile': (context) => const UserProfileScreen(),
-        '/second': (context) => const NextPage(),
+        '/userProfile': (context) => const UserProfileScreen(), // Route for navigating to the User Profile screen
+        '/second': (context) => const NextPage(), // Route for navigating to the NextPage screen
       },
     );
   }
 }
 
-//Handles requesting permissions and location services.
+
+// PermissionScreen is a StatefulWidget responsible for handling permissions and CleverTap initialization
 class PermissionScreen extends StatefulWidget {
   const PermissionScreen({super.key});
 
@@ -60,187 +89,126 @@ class PermissionScreen extends StatefulWidget {
 }
 
 class _PermissionScreenState extends State<PermissionScreen> {
+  // Instance of CleverTapPlugin to interact with CleverTap services
   final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
-  bool _permissionsRequested = false;
   
   @override
   void initState() {
     super.initState();
-    // Remove async from initState
-    _setupInitialState();
+    // Initialize CleverTap setup and prompt the Push Primer
+    _setupCleverTap();
   }
   
-  // Created a separate method to handle async operations
-  void _setupInitialState() async {
-    // iOS-specific setup
-    if (Platform.isIOS) {
-      await _promptPushPrimer();
-    }
-    
-    setlistener();
-    _initializeCleverTapInbox();
-    await _getCurrentLocation();  // Wait for location setup
-    
-    // Request permissions only after setup is done
-    if (!_permissionsRequested) {
-      _requestPermissions();
-    }
-    
-    // Set the handler using instance (not static)
-    _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(onDisplayUnitsLoaded);
-    var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
-    onDisplayUnitsLoaded(displayUnits);
+  // Sets up CleverTap configurations and handlers
+  void _setupCleverTap() {
+    // (_promptPushPrimer); // Prompts the user to enable notifications
+    _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(_onDisplayUnitsLoaded); // Sets a handler for display units
+    _initializeCleverTapInbox(); // Initializes the CleverTap Inbox feature
   }
 
-  void setlistener() {
-    // Using the consistent handler name on instance
-    _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(onDisplayUnitsLoaded);
-    debugPrint("Listener set");
-  }
-  
-  void onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
+  // Callback for when CleverTap display units are loaded
+  void _onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
     debugPrint("Display Units = $displayUnits");
-    // No need for duplicate handlers
-  }
-  
-  void _fetchNativeDisplay() async {
-    CleverTapPlugin.recordEvent("Native Display", {});
-    await Future.delayed(const Duration(seconds: 2));
-    var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
-    onDisplayUnitsLoaded(displayUnits);
   }
 
-  Future<void> _requestPermissions() async {
-    setState(() {
-      _permissionsRequested = true;
-    });
-    
-    // Different permission handling for iOS and Android
-    if (Platform.isIOS) {
-      // For iOS, we only check location permission here as notification is handled differently
-      var locationStatus = await Permission.location.request();
-      debugPrint("iOS Location Permission: $locationStatus");
+  // Requests permissions and navigates to the next screen
+  void _requestPermissionsAndNavigate() async {
+    try {
+      // Request notification and location permissions
+      await [
+        Permission.notification,
+        Permission.location,
+      ].request();
       
-      // Navigate to next screen regardless of permission status
-      // on iOS, as notification permissions are handled separately
+      // Get current location if permission is granted
+      _getCurrentLocation();
+      
+      // Always navigate to the next screen, regardless of permission status
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const UserProfileScreen()),
         );
       }
-    } else {
-      // Android permission handling
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.notification,
-        Permission.location,
-      ].request();
-
-      // Debugging permission statuses
-      debugPrint("Android Notification Permission: ${statuses[Permission.notification]}");
-      debugPrint("Android Location Permission: ${statuses[Permission.location]}");
-
-      // For Android, check notification permission before proceeding
-      if (statuses[Permission.notification]?.isGranted ?? false) {
-        if (mounted) {
-          // Navigate to UserProfileScreen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const UserProfileScreen()),
-          );
-        }
-      } else {
-        // Handle case where notification permission is not granted
-        debugPrint("Notification permission not granted on Android.");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Please grant notification permission.")),
-          );
-        }
+    } catch (e) {
+      debugPrint("Error requesting permissions: $e");
+      // Navigate to the next screen even if there's an error
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserProfileScreen()),
+        );
       }
     }
   }
 
-  Future<void> _promptPushPrimer() async {
-    // Only use push primer on iOS
-    if (Platform.isIOS) {
-      var pushPrimerJSON = {
-        'inAppType': 'alert',
-        'titleText': 'Get Notified',
-        'messageText': 'Enable Notification permission',
-        'followDeviceOrientation': true,
-        'positiveBtnText': 'Allow',
-        'negativeBtnText': 'Cancel',
-        'fallbackToSettings': true
-      };
-      
-      // Wait a moment to let the app initialize on iOS
-      await Future.delayed(const Duration(milliseconds: 500));
-      CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
-      
-      // Wait for the push primer to be shown
-      await Future.delayed(const Duration(seconds: 2));
-    }
-  }
+  // Prompts the user with a push primer to enable notifications
+  // void _promptPushPrimer() {
+  //   var pushPrimerJSON = {
+  //     'inAppType': 'alert',
+  //     'titleText': 'Get Notified',
+  //     'messageText': 'Enable Notification permission',
+  //     'followDeviceOrientation': true,
+  //     'positiveBtnText': 'Allow',
+  //     'negativeBtnText': 'Cancel',
+  //     'fallbackToSettings': true
+  //   };
+  //   CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
+  // }
 
+  // Initializes CleverTap inbox and sets up message handlers
   void _initializeCleverTapInbox() {
     CleverTapPlugin.initializeInbox();
-    _cleverTapPlugin.setCleverTapInboxDidInitializeHandler(inboxDidInitialize);
-    _cleverTapPlugin.setCleverTapInboxMessagesDidUpdateHandler(inboxMessagesDidUpdate);
+    _cleverTapPlugin.setCleverTapInboxDidInitializeHandler(_inboxDidInitialize);
+    _cleverTapPlugin.setCleverTapInboxMessagesDidUpdateHandler(_inboxMessagesDidUpdate);
   }
 
-  void inboxDidInitialize() {
-    setState(() {
-      print("📥 CleverTap Inbox Initialized");
-    });
+  // Callback when CleverTap Inbox initializes
+  void _inboxDidInitialize() {
+    debugPrint("📥 CleverTap Inbox Initialized");
   }
 
-  void inboxMessagesDidUpdate() {
-    setState(() {
-      print("🔄 CleverTap Inbox Messages Updated");
-    });
+  // Callback when CleverTap Inbox messages are updated
+  void _inboxMessagesDidUpdate() {
+    debugPrint("🔄 CleverTap Inbox Messages Updated");
   }
 
-  //get the current location of the user and send it to CleverTap.
+  // Retrieves the user's current location and sends it to CleverTap
   Future<void> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      print('Location services are disabled.');
-      return;
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        print('Location permissions are denied');
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled.');
         return;
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      print('Location permissions are permanently denied');
-      return;
-    }
+      // Check and request location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('Location permissions are denied');
+          return;
+        }
+      }
 
-    try {
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('Location permissions are permanently denied');
+        return;
+      }
+
+      // Get the current location with high accuracy
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
+        timeLimit: const Duration(seconds: 5), // Set timeout to 5 seconds
       );
-      double latitude = position.latitude;
-      double longitude = position.longitude;
-
-      print("Latitude: $latitude, Longitude: $longitude"); // Debugging line
-
-      // Send location data to CleverTap
-      CleverTapPlugin.setLocation(latitude, longitude);
-      print("Location sent to CleverTap"); // Debugging line
+      
+      // Send the obtained location to CleverTap
+      CleverTapPlugin.setLocation(position.latitude, position.longitude);
+      debugPrint("Location sent to CleverTap: ${position.latitude}, ${position.longitude}");
     } catch (e) {
-      print("Error getting location: $e");
+      debugPrint("Error getting location: $e");
     }
   }
 
@@ -251,29 +219,24 @@ class _PermissionScreenState extends State<PermissionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Requesting Permissions..."),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _requestPermissions,
-              child: const Text("Grant Permissions"),
+            const Text(
+              "Requesting Permissions...", 
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 10),
-            // Added button to fetch native display
+            const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: _fetchNativeDisplay,
-              child: const Text("Fetch Native Display"),
-            ),
-            // iOS-specific button
-            if (Platform.isIOS) 
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const UserProfileScreen()),
-                  );
-                },
-                child: const Text("Skip to Main Screen"),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
+              onPressed: _requestPermissionsAndNavigate, // Triggers permission request and navigation
+              child: const Text(
+                "Grant Permissions", 
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
           ],
         ),
       ),
@@ -281,11 +244,12 @@ class _PermissionScreenState extends State<PermissionScreen> {
   }
 }
 
-// Image slider widget for displaying multiple images with a slider
+
+
 class ImageSlider extends StatefulWidget {
   final List<String> imageUrls;
 
-  const ImageSlider({Key? key, required this.imageUrls}) : super(key: key);
+  const ImageSlider({super.key, required this.imageUrls});
 
   @override
   _ImageSliderState createState() => _ImageSliderState();
@@ -294,10 +258,38 @@ class ImageSlider extends StatefulWidget {
 class _ImageSliderState extends State<ImageSlider> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    // Changed from 300ms to 3000ms (3 seconds) for better user experience
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_currentIndex < widget.imageUrls.length - 1) {
+        _currentIndex++;
+      } else {
+        _currentIndex = 0; // Loop back to the first image
+      }
+      
+      // Only animate if widget is still mounted and controller is attached
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _currentIndex,
+          duration: const Duration(milliseconds: 500), // Slightly increased for smoother transition
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
     super.dispose();
   }
 
@@ -322,6 +314,8 @@ class _ImageSliderState extends State<ImageSlider> {
               setState(() {
                 _currentIndex = index;
               });
+              // Don't restart timer on every manual page change
+              // Just update the index and let the existing timer continue
             },
             itemBuilder: (context, index) {
               return Padding(
@@ -334,7 +328,7 @@ class _ImageSliderState extends State<ImageSlider> {
                     return Center(
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded / 
+                            ? loadingProgress.cumulativeBytesLoaded /
                                 loadingProgress.expectedTotalBytes!
                             : null,
                       ),
@@ -353,47 +347,24 @@ class _ImageSliderState extends State<ImageSlider> {
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: _currentIndex > 0
-                  ? () {
-                      _pageController.previousPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  : null,
-            ),
-            Text(
-              "${_currentIndex + 1} / ${widget.imageUrls.length}",
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward_ios),
-              onPressed: _currentIndex < widget.imageUrls.length - 1
-                  ? () {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  : null,
-            ),
-          ],
-        ),
-        // Add indicators
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
             widget.imageUrls.length,
-            (index) => Container(
-              width: 8,
-              height: 8,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentIndex == index ? Colors.blue : Colors.grey,
+            (index) => GestureDetector(
+              onTap: () {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _currentIndex == index ? Colors.blue : Colors.grey,
+                ),
               ),
             ),
           ),
@@ -403,6 +374,12 @@ class _ImageSliderState extends State<ImageSlider> {
   }
 }
 
+
+
+
+
+
+
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
 
@@ -410,44 +387,32 @@ class UserProfileScreen extends StatefulWidget {
   _UserProfileScreenState createState() => _UserProfileScreenState();
 }
 
+
 class _UserProfileScreenState extends State<UserProfileScreen> {
   final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
-  // Move imageUrls inside this class as a state variable
   List<String> imageUrls = [];
 
-  //Controllers to take input from the user
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _identityController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  
+  get token => null;
 
   @override
   void initState() {
     super.initState();
     _setupDisplayUnits();
-    
-    // For iOS, request notification permission again here
-    if (Platform.isIOS) {
-      _requestIOSNotificationPermission();
-    }
-  }
-
-  Future<void> _requestIOSNotificationPermission() async {
-    // On iOS, we need to wait a moment before requesting
-    await Future.delayed(const Duration(seconds: 1));
-    
-    var status = await Permission.notification.status;
-    if (status.isDenied) {
-      // Request again or prompt user to enable manually
-      await Permission.notification.request();
-    }
   }
   
   void _setupDisplayUnits() async {
-    // Set up the display units handler on instance
     _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(_onDisplayUnitsLoaded);
-    var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
-    _onDisplayUnitsLoaded(displayUnits);
+    try {
+      var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
+      _onDisplayUnitsLoaded(displayUnits);
+    } catch (e) {
+      debugPrint("Error getting display units: $e");
+    }
   }
 
   void _onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
@@ -461,19 +426,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           .whereType<String>()
           .toList();
       
-      debugPrint("Image URLs updated: ${imageUrls.length} images found");
-      for (var i = 0; i < imageUrls.length; i++) {
-        debugPrint("Image $i: ${imageUrls[i]}");
-      }
+      debugPrint("Found ${imageUrls.length} images in display units");
     });
   }
   
   void _fetchNativeDisplay() async {
     CleverTapPlugin.recordEvent("Native Display", {});
     await Future.delayed(const Duration(seconds: 2));
-    var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
-    _onDisplayUnitsLoaded(displayUnits);
+    try {
+      var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
+      _onDisplayUnitsLoaded(displayUnits);
+    } catch (e) {
+      debugPrint("Error fetching display units: $e");
+    }
   }
+
+
+
 
   @override
   void dispose() {
@@ -491,13 +460,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       'Email': _emailController.text,
       'Phone': _phoneController.text,
       'stuff': ["bags", "shoes"],
+      'MSG-push':true,
+      // 'MSG-push': true,
+      
     };
+  //   if (Platform.isAndroid) {
+  //   CleverTapPlugin.setPushToken(token ?? '');
+  //   CleverTapPlugin.profileSet({"MSG-push": true});
+  //  }
+
+
     CleverTapPlugin.onUserLogin(profile);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("User logged in successfully!")),
     );
     
-    // Fetch native display after login
     _fetchNativeDisplay();
   }
 
@@ -516,7 +493,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       const SnackBar(content: Text("Profile updated successfully!")),
     );
     
-    // Fetch native display after profile update
     _fetchNativeDisplay();
   }
 
@@ -589,6 +565,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 }
+
 
 class NextPage extends StatelessWidget {
   const NextPage({super.key});

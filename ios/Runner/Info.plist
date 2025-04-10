@@ -2,26 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-
-	
-
-	<key>NSLocationWhenInUseUsageDescription</key>
-<string>We need your location to provide better services.</string>
-<key>NSLocationAlwaysUsageDescription</key>
-<string>We need your location to provide better services.</string>
-<key>NSUserTrackingUsageDescription</key>
-<string>We need your permission to track your activity.</string>
-<key>UIBackgroundModes</key>
-<array>
-    <string>location</string>
-</array>
-<key>UIRequiredDeviceCapabilities</key>
-<array>
-    <string>location-services</string>
-</array>
-
-
-
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -50,12 +30,34 @@
 	<string>TEST-c0b-160</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	
+	<!-- Location permissions required for Geofencing -->
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to provide better services even when the app is closed.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to show nearby offers and content.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>App requires access to your location for personalized experience and offers.</string>
+	
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We need your permission to track your activity.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>processing</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>location-services</string>
+	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

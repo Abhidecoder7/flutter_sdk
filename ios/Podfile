@@ -34,13 +34,16 @@ target 'Runner' do
   end
 end
 
+# Moved NotificationService target out of post_install block
+target 'NotificationService' do
+  use_frameworks!
+  pod 'CTNotificationService'
+  pod 'CleverTap-iOS-SDK'
+  pod 'CleverTap-Geofence-SDK'
+end
+
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-  end
-  
-  # Replace `YOUR_NOTIFICATION_SERVICE_TARGET_NAME` with your actual notification service target name
-  target 'RunnerNotificationService' do
-    pod 'CTNotificationService'
   end
 end
