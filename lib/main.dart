@@ -1,10 +1,17 @@
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
+
+// import 'package:permission_handler/permission_handler.dart';
+
+Future<void> requestLocationPermissions() async {
+  await Permission.location.request();
+  await Permission.locationAlways.request(); // For background location
+}
 
 
 // Global navigator key to handle navigation outside widget context
@@ -58,7 +65,7 @@ void _onNotificationClicked(Map<String, dynamic> payload) {
     navigatorKey.currentState?.pushNamed('/second');
   }
 }
-
+//https:/myapp://second
 
 
 // Main application widget
@@ -88,6 +95,8 @@ class PermissionScreen extends StatefulWidget {
   _PermissionScreenState createState() => _PermissionScreenState();
 }
 
+
+
 class _PermissionScreenState extends State<PermissionScreen> {
   // Instance of CleverTapPlugin to interact with CleverTap services
   final CleverTapPlugin _cleverTapPlugin = CleverTapPlugin();
@@ -96,12 +105,13 @@ class _PermissionScreenState extends State<PermissionScreen> {
   void initState() {
     super.initState();
     // Initialize CleverTap setup and prompt the Push Primer
+     (_promptPushPrimer); // Prompts the user to enable notifications
     _setupCleverTap();
   }
   
   // Sets up CleverTap configurations and handlers
   void _setupCleverTap() {
-    // (_promptPushPrimer); // Prompts the user to enable notifications
+    (_promptPushPrimer); // Prompts the user to enable notifications
     _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(_onDisplayUnitsLoaded); // Sets a handler for display units
     _initializeCleverTapInbox(); // Initializes the CleverTap Inbox feature
   }
@@ -109,6 +119,8 @@ class _PermissionScreenState extends State<PermissionScreen> {
   // Callback for when CleverTap display units are loaded
   void _onDisplayUnitsLoaded(List<dynamic>? displayUnits) {
     debugPrint("Display Units = $displayUnits");
+    // CleverTapPlugin.pushDisplayUnitViewedEvent(“unitId”);
+
   }
 
   // Requests permissions and navigates to the next screen
@@ -143,18 +155,18 @@ class _PermissionScreenState extends State<PermissionScreen> {
   }
 
   // Prompts the user with a push primer to enable notifications
-  // void _promptPushPrimer() {
-  //   var pushPrimerJSON = {
-  //     'inAppType': 'alert',
-  //     'titleText': 'Get Notified',
-  //     'messageText': 'Enable Notification permission',
-  //     'followDeviceOrientation': true,
-  //     'positiveBtnText': 'Allow',
-  //     'negativeBtnText': 'Cancel',
-  //     'fallbackToSettings': true
-  //   };
-  //   CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
-  // }
+  void _promptPushPrimer() {
+    var pushPrimerJSON = {
+      'inAppType': 'alert',
+      'titleText': 'Get Notified',
+      'messageText': 'Enable Notification permission',
+      'followDeviceOrientation': true,
+      'positiveBtnText': 'Allow',
+      'negativeBtnText': 'Cancel',
+      'fallbackToSettings': true
+    };
+    CleverTapPlugin.promptPushPrimer(pushPrimerJSON);
+  }
 
   // Initializes CleverTap inbox and sets up message handlers
   void _initializeCleverTapInbox() {
@@ -406,7 +418,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
   
   void _setupDisplayUnits() async {
-    _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(_onDisplayUnitsLoaded);
+    // _cleverTapPlugin.setCleverTapDisplayUnitsLoadedHandler(_onDisplayUnitsLoaded);
     try {
       var displayUnits = await CleverTapPlugin.getAllDisplayUnits();
       _onDisplayUnitsLoaded(displayUnits);
@@ -464,6 +476,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       // 'MSG-push': true,
       
     };
+    
   //   if (Platform.isAndroid) {
   //   CleverTapPlugin.setPushToken(token ?? '');
   //   CleverTapPlugin.profileSet({"MSG-push": true});
@@ -583,3 +596,16 @@ class NextPage extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+//Tetsing
+
+

@@ -30,24 +30,18 @@
 	<string>TEST-c0b-160</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	
-	<!-- Location permissions required for Geofencing -->
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>App requires access to your location for personalized experience and offers.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We need your location to provide better services even when the app is closed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to show nearby offers and content.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>App requires access to your location for personalized experience and offers.</string>
-	
 	<key>NSUserTrackingUsageDescription</key>
 	<string>We need your permission to track your activity.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>location</string>
-		<string>fetch</string>
-		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
@@ -60,16 +54,10 @@
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 </dict>
 </plist>

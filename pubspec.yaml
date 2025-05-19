@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   clevertap_plugin: ^3.2.0
+  # clevertap_plugin: ^2.2.0
   firebase_core: ^2.27.0
 
   # The following adds the Cupertino Icons font to your application.
@@ -40,6 +41,7 @@ dependencies:
   geolocator: ^13.0.2
   firebase_messaging: ^14.7.10
   carousel_slider: ^5.0.0
+ 
 
 
 dev_dependencies:
