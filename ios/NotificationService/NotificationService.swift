@@ -25,7 +25,6 @@ class NotificationService: CTNotificationServiceExtension {
 //        if let bestAttemptContent = bestAttemptContent {
 //            // Modify the notification content here...
 //            bestAttemptContent.title = "\(bestAttemptContent.title) [modified]"
-//            
 //            contentHandler(bestAttemptContent)
 //        }
     }
